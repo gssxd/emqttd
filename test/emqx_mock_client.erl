@@ -18,28 +18,28 @@
 
 -behaviour(gen_server).
 
--export([start_link/1, start_session/1, stop/1]).
+-export([start_link/0]).
 
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
          terminate/2, code_change/3]).
 
 -record(state, {clientid, session}).
 
-start_link(ClientId) ->
-    gen_server:start_link(?MODULE, [ClientId], []).
+start_link() ->
+    gen_server:start_link(?MODULE, [], []).
 
-start_session(CPid) ->
-    gen_server:call(CPid, start_session).
+% start_session(CPid) ->
+%     gen_server:call(CPid, start_session).
 
-stop(CPid) ->
-    gen_server:call(CPid, stop).
+% stop(CPid) ->
+%     gen_server:call(CPid, stop).
 
-init([ClientId]) ->
-    {ok, #state{clientid = ClientId}}.
+init([]) ->
+    {ok, #state{}}.
 
-handle_call(start_session, _From, State = #state{clientid = ClientId}) ->
-    {ok, SessPid, _} = emqx_sm:start_session(true, {ClientId, undefined}),
-    {reply, {ok, SessPid}, State#state{session = SessPid}};
+% handle_call(start_session, _From, State) ->
+%     {ok, SessPid, _} = emqx_sm:start_session(true, {ClientId, undefined}),
+%     {reply, {ok, SessPid}, State#state{session = SessPid}};
 
 handle_call(stop, _From, State) ->
     {stop, normal, ok, State};
