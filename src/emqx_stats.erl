@@ -186,18 +186,18 @@ handle_cast(Msg, State) ->
     {noreply, State}.
 
 handle_info({timeout, TRef, tick}, State = #state{timer= TRef, updates = Updates}) ->
-    lists:foldl(
-      fun(Update = #update{name = Name, countdown = C, interval = I,
-                           func = UpFun}, Acc) when C =< 0 ->
-              try UpFun()
-              catch _:Error ->
-                  emqx_logger:error("[Stats] update ~s error: ~p", [Name, Error])
-              end,
-              [Update#update{countdown = I} | Acc];
-         (Update = #update{countdown = C}, Acc) ->
-              [Update#update{countdown = C - 1} | Acc]
-      end, [], Updates),
-    {noreply, start_timer(State), hibernate};
+    Acc1 = lists:foldl(
+                fun(Update = #update{name = Name, countdown = C, interval = I,
+                                    func = UpFun}, Acc) when C =< 0 ->
+                        try UpFun()
+                        catch _:Error ->
+                            emqx_logger:error("[Stats] update ~s error: ~p", [Name, Error])
+                        end,
+                        [Update#update{countdown = I} | Acc];
+                    (Update = #update{name = Name, countdown = C}, Acc) ->
+                        [Update#update{countdown = C - 1} | Acc]
+                end, [], Updates),
+    {noreply, start_timer(State#state{updates = Acc1}), hibernate};
 
 handle_info(Info, State) ->
     emqx_logger:error("[Stats] unexpected info: ~p", [Info]),

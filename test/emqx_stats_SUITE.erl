@@ -50,11 +50,8 @@ t_set_get_state(_) ->
 t_update_interval(_) ->
     {ok, _} = emqx_stats:start_link(),
     ok = emqx_stats:update_interval(cm_stats, fun update_stats/0),
-    timer:sleep(2000),
+    timer:sleep(2500),
     1 = emqx_stats:getstat('clients/count').
 
 update_stats() ->
-    ClientsCount = emqx_stats:getstat('clients/count'),
-    ct:log("hello~n"),
-    % emqx_stats:setstat('clients/count', 'clients/max', ClientsCount + 1).
     emqx_stats:setstat('clients/count',  1).
